@@ -59,5 +59,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.hilt.android)
+    implementation(libs.hilt.android.navigation)
     ksp(libs.hilt.android.compiler)
 }
