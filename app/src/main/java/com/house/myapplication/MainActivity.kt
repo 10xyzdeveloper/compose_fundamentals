@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.house.myapplication.ui.theme.MyApplicationTheme
 import dagger.hilt.android.AndroidEntryPoint
-
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -50,6 +52,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Displays the list; passes along 4 callbacks for each row:
+ *   • onHeartClick
+ *   • onDeleteClick
+ *   • onMoveUpClick
+ *   • onMoveDownClick
+ */
 @Composable
 fun ListScreen(viewModel: MyViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
@@ -62,22 +71,39 @@ fun ListScreen(viewModel: MyViewModel = hiltViewModel()) {
         items(uiState.items, key = { it.id }) { item ->
             ListItemRow(
                 item = item,
-                onHeartClick = { viewModel.toggleHeart(item.id) }
+                onHeartClick = { viewModel.toggleHeart(item.id) },
+                onDeleteClick = { viewModel.deleteItem(item.id) },
+                onMoveUpClick = { viewModel.moveItemUp(item.id) },
+                onMoveDownClick = { viewModel.moveItemDown(item.id) }
             )
         }
-
     }
-
 }
 
+/**
+ * One row with:
+ *   • Title (weight = 1f)
+ *   • Heart icon (toggles isHearted)
+ *   • ↑ / ↓ icons (reorder)
+ *   • Delete icon (removes item)
+ *
+ * Each Icon uses Modifier.clickable { … } directly.
+ */
 @Composable
-fun ListItemRow(item: ListItem, onHeartClick: () -> Unit) {
+fun ListItemRow(
+    item: ListItem,
+    onHeartClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onMoveUpClick: () -> Unit,
+    onMoveDownClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // 1) Title
         Text(
             text = item.title,
             style = MaterialTheme.typography.bodySmall,
@@ -86,11 +112,13 @@ fun ListItemRow(item: ListItem, onHeartClick: () -> Unit) {
 
         Spacer(modifier = Modifier.size(8.dp))
 
-        Box(Modifier.size(24.dp).clickable{
-            onHeartClick()
-        },
+        // 2) Heart (Box + clickable)
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .clickable { onHeartClick() },
             contentAlignment = Alignment.Center
-        ){
+        ) {
             if (item.isHearted) {
                 Icon(
                     imageVector = Icons.Filled.Favorite,
@@ -106,6 +134,38 @@ fun ListItemRow(item: ListItem, onHeartClick: () -> Unit) {
             }
         }
 
+        Spacer(modifier = Modifier.size(8.dp))
+
+        // 3) Move Up
+        Icon(
+            imageVector = Icons.Filled.ThumbUp,
+            contentDescription = "Move Up",
+            modifier = Modifier
+                .size(24.dp)
+                .clickable { onMoveUpClick() }
+        )
+
+        Spacer(modifier = Modifier.size(8.dp))
+
+        // 4) Move Down
+        Icon(
+            imageVector = Icons.Filled.Home,
+            contentDescription = "Move Down",
+            modifier = Modifier
+                .size(24.dp)
+                .clickable { onMoveDownClick() }
+        )
+
+        Spacer(modifier = Modifier.size(8.dp))
+
+        // 5) Delete
+        Icon(
+            imageVector = Icons.Filled.Delete,
+            contentDescription = "Delete",
+            modifier = Modifier
+                .size(24.dp)
+                .clickable { onDeleteClick() }
+        )
     }
 }
 
