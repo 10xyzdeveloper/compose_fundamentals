@@ -12,11 +12,6 @@ class MyViewModel @Inject constructor(): ViewModel(){
     private val _uiState = MutableStateFlow(UiState(items = List(20){ index->
         ListItem(id = index, title = "Item $index", isHearted = false)
     }))
-
-
     val uiState: StateFlow<UiState> = _uiState
-
-
-
 
 }
