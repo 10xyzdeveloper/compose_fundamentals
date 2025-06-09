@@ -1,10 +1,13 @@
 package com.house.myapplication
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,19 +22,36 @@ class MyViewModel @Inject constructor() : ViewModel() {
     )
     val uiState: StateFlow<UiState> = _uiState
 
-    /** Toggle the heart flag of exactly one item. */
-    fun toggleHeart(itemId: Int) {
-        _uiState.update { current ->
-            val updatedList = current.items.map { item ->
-                if (item.id == itemId) {
-                    item.copy(isHearted = !item.isHearted)
-                } else {
-                    item
-                }
-            }
-            current.copy(items = updatedList)
-        }
+    fun toggleHeart(itemId:Int){
+       viewModelScope.launch {
+           for(i in 1..100){
+               _uiState.update{ current->
+                   val updatedList = current.items.map {
+                       if(it.id == itemId){
+                           it.copy(progress = i)
+                       }else{
+                           it
+                       }
+                   }
+                   current.copy(items = updatedList)
+               }
+               delay(16)
+           }
+
+           _uiState.update { current ->
+               val updatedList = current.items.map { item ->
+                   if (item.id == itemId) {
+                       item.copy(isHearted = !item.isHearted, progress = 0)
+                   } else {
+                       item
+                   }
+               }
+               current.copy(items = updatedList)
+           }
+
+       }
     }
+
 
     /** Delete the item with the given ID. */
     fun deleteItem(itemId: Int) {
